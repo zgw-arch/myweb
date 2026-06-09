@@ -388,6 +388,7 @@
 	<div class="banner" id="banner">
 		<h1>你好，我是前端开发者</h1>
 		<p id="typeText"></p>
+		<p style="margin-top:15px;color:#666;">本站访问量：<span id="visitNum">0</span> 次</p>
 		<div class="down-arrow">↓</div>
 	</div>
 
@@ -489,7 +490,30 @@
 			</div>
 		</div>
 	</section>
+<!-- 项目模块 → 替换为天气页面 -->
+<section id="project">
+  <!-- 天气模块的所有代码 -->
+</section>
 
+<!-- 新增留言板模块 -->
+<section id="message" style="background:#f5f7fa;">
+  <div class="container fade-box">
+    <h2 class="section-title">留言板</h2>
+    <!-- 留言表单 -->
+    <div style="max-width:600px;margin:0 auto 40px;">
+      <input type="text" id="msgName" placeholder="请输入昵称" style="width:100%;padding:12px;margin-bottom:15px;border:1px solid #ddd;border-radius:6px;outline:none;">
+      <textarea id="msgContent" rows="4" placeholder="写下你的留言..." style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;outline:none;resize:none;"></textarea>
+      <button id="submitMsg" class="btn" style="margin-top:15px;">提交留言</button>
+    </div>
+    <!-- 留言列表容器 -->
+    <div id="msgList"></div>
+  </div>
+</section>
+
+<!-- 页脚 -->
+<footer>
+  <p>© 2026 个人作品集 | 前端练习项目</p>
+</footer>
 	<!-- 页脚 -->
 	<footer>
 		<p>© 2026 个人作品集 | 前端练习项目</p>
@@ -693,6 +717,83 @@
 			typeWrite();
 			getWeatherData();
 		});
+// ===================== 后端接口配置 =====================
+// 替换成你自己的 Render 域名！！
+const baseUrl = "https://portfolio-server-c5j3.onrender.com/api";
+
+// ========== 访客统计 ==========
+fetch(`${baseUrl}/visit`)
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('visitNum').innerText = data.count;
+  })
+  .catch(err => console.log("访客统计加载失败", err));
+
+// ========== 留言板功能 ==========
+const msgList = document.getElementById('msgList');
+const msgName = document.getElementById('msgName');
+const msgContent = document.getElementById('msgContent');
+const submitMsg = document.getElementById('submitMsg');
+
+// 渲染留言列表
+function renderMessages() {
+  fetch(`${baseUrl}/messages`)
+    .then(res => res.json())
+    .then(list => {
+      let html = "";
+      if (list.length === 0) {
+        html = '<p style="text-align:center;color:#999;font-size:1rem;">暂无留言，快来抢沙发吧~</p>';
+      } else {
+        list.forEach(item => {
+          html += `
+            <div style="background:#fff;padding:15px;border-radius:8px;margin-bottom:15px;box-shadow:0 2px 6px rgba(0,0,0,0.06);">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                <strong style="color:#409eff;">${item.name}</strong>
+                <span style="font-size:0.8rem;color:#999;">${item.time}</span>
+              </div>
+              <p style="color:#444;line-height:1.6;">${item.content}</p>
+            </div>
+          `;
+        });
+      }
+      msgList.innerHTML = html;
+    })
+    .catch(err => console.log("留言加载失败", err));
+}
+
+// 页面加载渲染留言
+window.addEventListener('load', renderMessages);
+
+// 提交留言点击事件
+submitMsg.addEventListener('click', () => {
+  const name = msgName.value.trim();
+  const content = msgContent.value.trim();
+  if (!name || !content) {
+    alert('昵称和留言内容不能为空！');
+    return;
+  }
+  fetch(`${baseUrl}/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ name, content })
+  })
+  .then(res => res.json())
+  .then(res => {
+    alert(res.msg);
+    msgName.value = '';
+    msgContent.value = '';
+    renderMessages();
+  })
+  .catch(() => {
+    alert('提交失败，请稍后再试');
+  });
+});
+
+
+		
 	</script>
+	
 </body>
 </html>

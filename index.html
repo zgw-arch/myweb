@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>个人作品集</title>
+	<script src="https://cdnjs.webstatic.cn/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
 	<style>
 		/* 全局样式重置 */
 		* {
@@ -200,90 +201,128 @@
 			transition: width 1s ease;
 		}
 
-		/* 项目模块 */
+		/* 天气页面样式（继承第一套代码完整样式） */
 		#project {
-			background: #fff;
+			background: linear-gradient(180deg, #667eea 0%, #764ba2 50%, #6a4c93 100%);
+			color: white;
 		}
-		.project-list {
-			display: grid;
-			grid-template-columns: repeat(3, 1fr);
-			gap: 30px;
+		.weather-container {
+			max-width: 450px;
+			margin: 0 auto;
 		}
-		.project-card {
-			background: #fff;
-			border-radius: 10px;
-			overflow: hidden;
-			box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-			transition: transform 0.3s;
+		/* 头部 */
+		.weather-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 2rem;
 		}
-		.project-card:hover {
-			transform: scale(1.03);
+		.city-name {
+			font-size: 20px;
+			font-weight: 500;
 		}
-		.project-img {
-			width: 100%;
-			height: 180px;
-			background: #c6e2ff;
+		.detail-btn {
+			background: rgba(255,255,255,0.2);
+			border: none;
+			color: white;
+			padding: 8px 16px;
+			border-radius: 20px;
+			font-size: 14px;
+			cursor: pointer;
+		}
+		/* 主天气卡片 */
+		.main-card {
+			background: rgba(255,255,255,0.15);
+			backdrop-filter: blur(10px);
+			border-radius: 20px;
+			padding: 2rem;
+			text-align: center;
+			margin-bottom: 1rem;
+		}
+		.current-temp {
+			font-size: 72px;
+			font-weight: bold;
+			margin: 10px 0;
+		}
+		/* 上标样式统一优化 */
+		sup {
+			font-size: 0.35em;
+			line-height: 1;
+			vertical-align: super;
+		}
+		.weather-status {
+			font-size: 18px;
+			margin-bottom: 1.5rem;
+		}
+		.weather-details {
+			display: flex;
+			justify-content: space-around;
+		}
+		.detail-item {
+			text-align: center;
+		}
+		.detail-value {
+			font-size: 16px;
+			font-weight: 500;
+		}
+		.detail-label {
+			font-size: 12px;
+			opacity: 0.8;
+		}
+		/* 未来预报卡片（竖排） */
+		.forecast-card {
+			background: rgba(255,255,255,0.15);
+			backdrop-filter: blur(10px);
+			border-radius: 20px;
+			padding: 1.5rem;
+			margin-bottom: 1rem;
+		}
+		.forecast-title {
+			font-size: 16px;
+			margin-bottom: 1rem;
+		}
+		.forecast-list {
+			display: flex;
+			flex-direction: column;
+			gap: 1.2rem;
+		}
+		.forecast-item {
 			display: flex;
 			align-items: center;
-			justify-content: center;
-			color: #409eff;
-			font-size: 1.2rem;
+			justify-content: space-between;
 		}
-		.project-info {
-			padding: 20px;
+		.forecast-date-day {
+			display: flex;
+			flex-direction: column;
+			width: 90px;
 		}
-		.project-info h3 {
-			margin-bottom: 10px;
+		.forecast-date {
+			font-size: 18px;
+			font-weight: 500;
 		}
-		.project-info p {
-			color: #666;
-			font-size: 0.9rem;
-			margin-bottom: 15px;
+		.forecast-day {
+			font-size: 14px;
+			opacity: 0.8;
 		}
-		.btn {
-			display: inline-block;
-			padding: 8px 18px;
-			background: #409eff;
-			color: #fff;
-			border-radius: 4px;
-			cursor: pointer;
-			transition: background 0.3s;
+		.forecast-icon {
+			font-size: 28px;
 		}
-		.btn:hover {
-			background: #2b88e0;
+		.forecast-temp {
+			font-size: 20px;
+			font-weight: 500;
+			width: 80px;
+			text-align: right;
 		}
-
-		/* 弹窗 */
-		.modal {
-			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			background: rgba(0,0,0,0.6);
-			display: none;
-			align-items: center;
-			justify-content: center;
-			z-index: 1000;
+		/* 折线图区域 */
+		.chart-card {
+			background: rgba(255,255,255,0.15);
+			backdrop-filter: blur(10px);
+			border-radius: 20px;
+			padding: 1.5rem;
 		}
-		.modal-box {
-			width: 90%;
-			max-width: 600px;
-			background: #fff;
-			padding: 30px;
-			border-radius: 10px;
-			position: relative;
-		}
-		.close {
-			position: absolute;
-			top: 15px;
-			right: 20px;
-			font-size: 1.5rem;
-			cursor: pointer;
-			color: #999;
-		}
-		.modal h3 {
-			margin-bottom: 20px;
+		canvas {
+			width: 100% !important;
+			height: 250px !important;
 		}
 
 		/* 页脚 */
@@ -320,12 +359,6 @@
 			}
 			.skill-list {
 				grid-template-columns: repeat(2, 1fr);
-			}
-			.project-list {
-				grid-template-columns: repeat(1, 1fr);
-			}
-			.banner h1 {
-				font-size: 2rem;
 			}
 		}
 		/* 手机 */
@@ -409,47 +442,53 @@
 		</div>
 	</section>
 
-	<!-- 项目模块 -->
+	<!-- 项目模块 → 替换为天气页面 -->
 	<section id="project">
 		<div class="container fade-box">
-			<h2 class="section-title">我的项目</h2>
-			<div class="project-list">
-				<div class="project-card">
-					<div class="project-img">简历网页</div>
-					<div class="project-info">
-						<h3>个人简历网页</h3>
-						<p>纯前端制作的静态简历页面，布局整洁，支持手机适配。</p>
-						<span class="btn" data-id="1">查看详情</span>
+			<h2 class="section-title">天气项目演示</h2>
+			<div class="weather-container">
+				<!-- 头部 -->
+				<div class="weather-header">
+					<div class="city-name">苏州</div>
+					<button class="detail-btn">查看详情</button>
+				</div>
+
+				<!-- 主天气卡片 -->
+				<div class="main-card">
+					<div class="weather-icon" id="currentIcon">☀️</div>
+					<div class="current-temp" id="currentTemp">--°</div>
+					<div class="weather-status" id="currentStatus">-- · --</div>
+					<div class="weather-details">
+						<div class="detail-item">
+							<div class="detail-value" id="humidity">--%</div>
+							<div class="detail-label">湿度</div>
+						</div>
+						<div class="detail-item">
+							<div class="detail-value" id="aqi">优</div>
+							<div class="detail-label">空气质量</div>
+						</div>
+						<div class="detail-item">
+							<div class="detail-value" id="wind">--级</div>
+							<div class="detail-label">风力</div>
+						</div>
 					</div>
 				</div>
-				<div class="project-card">
-					<div class="project-img">美食页面</div>
-					<div class="project-info">
-						<h3>美食介绍页面</h3>
-						<p>图文展示类静态页面，运用卡片布局与悬浮效果。</p>
-						<span class="btn" data-id="2">查看详情</span>
+
+				<!-- 未来5天预报卡片（竖排） -->
+				<div class="forecast-card">
+					<div class="forecast-title">未来5天预报</div>
+					<div class="forecast-list" id="forecastList">
+						<!-- JS动态填充 -->
 					</div>
 				</div>
-				<div class="project-card">
-					<div class="project-img">点击进入天气页面网站超链接</div>
-					<div class="project-info">
-						<h3>简易天气展示页</h3>
-						<p>结合JS实现简单数据展示与动态样式切换。</p>
-						<span class="btn" data-id="3">查看详情</span>
-					</div>
+
+				<!-- 温度折线图卡片 -->
+				<div class="chart-card">
+					<canvas id="tempChart"></canvas>
 				</div>
 			</div>
 		</div>
 	</section>
-
-	<!-- 弹窗 -->
-	<div class="modal" id="modal">
-		<div class="modal-box">
-			<span class="close" id="close">×</span>
-			<h3 id="modalTitle">项目详情</h3>
-			<div id="modalContent"></div>
-		</div>
-	</div>
 
 	<!-- 页脚 -->
 	<footer>
@@ -530,45 +569,129 @@
 			});
 		});
 
-		// 6. 项目弹窗
-		const modal = document.getElementById('modal');
-		const closeBtn = document.getElementById('close');
-		const modalTitle = document.getElementById('modalTitle');
-		const modalContent = document.getElementById('modalContent');
-		const btns = document.querySelectorAll('.btn');
+		// ========== 天气页面JS逻辑（完整保留） ==========
+		let tempChart = null;
+		// 苏州经纬度：北纬31.3，东经120.6
+		const lat = 31.3;
+		const lon = 120.6;
 
-		const projectData = {
-			1: {
-				title: "个人简历网页",
-				content: "该项目使用 HTML + CSS 制作，采用弹性布局实现多模块排版，适配手机与电脑端。页面包含个人信息、技能、经历等板块，样式简洁大方，可直接作为线上简历使用。"
-			},
-			2: {
-				title: "静态美食介绍页面",
-				content: "图文展示类静态页面，主要练习卡片布局、圆角、阴影、悬浮动画等CSS样式。整体风格清新，图片与文字搭配合理，适合作为入门布局练习项目。"
-			},
-			3: {
-				title: "简易天气展示页面",
-				content: "结合原生JS完成，实现基础数据渲染、简单逻辑判断。练习DOM操作、动态修改页面内容与样式，加深对JavaScript基础交互的理解。"
+		async function getWeatherData() {
+			const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weathercode,temperature_2m_max,temperature_2m_min&forecast_days=5&timezone=Asia%2FShanghai`;
+			try {
+				const res = await fetch(apiUrl);
+				const data = await res.json();
+				renderCurrentWeather(data);
+				renderForecast(data);
+				renderChart(data);
+			} catch (err) {
+				console.error("数据加载失败：", err);
 			}
-		};
+		}
 
-		btns.forEach(btn=>{
-			btn.addEventListener('click', ()=>{
-				let id = btn.dataset.id;
-				modalTitle.innerText = projectData[id].title;
-				modalContent.innerText = projectData[id].content;
-				modal.style.display = 'flex';
+		// 渲染当前天气：改为 数字<sup>°C</sup> 上标格式
+		function renderCurrentWeather(data) {
+			const current = data.current_weather;
+			document.getElementById("currentTemp").innerHTML = `${Math.round(current.temperature)}<sup>°C</sup>`;
+			document.getElementById("currentStatus").innerText = "晴 · 微风";
+			document.getElementById("humidity").innerText = "60%";
+			document.getElementById("wind").innerText = `${Math.round(current.windspeed)}级`;
+		}
+
+		// 渲染未来5天预报（竖排）
+		function renderForecast(data) {
+			const daily = data.daily;
+			const weekDays = ["今天", "明天", "周四", "周五", "周六"];
+			// 根据天气code匹配图标
+			const weatherIcons = {
+				0: "☀️", 1: "⛅", 2: "⛅", 3: "☁️",
+				45: "🌫️", 48: "🌫️",
+				51: "🌧️", 53: "🌧️", 55: "🌧️",
+				61: "🌧️", 63: "🌧️", 65: "🌧️",
+				71: "❄️", 73: "❄️", 75: "❄️",
+				80: "🌦️", 81: "🌦️", 82: "🌦️"
+			};
+
+			let html = "";
+			for (let i = 0; i < 5; i++) {
+				const dateStr = daily.time[i];
+				const datePart = dateStr.split("-");
+				const date = `${datePart[1]}/${datePart[2]}`;
+				const icon = weatherIcons[daily.weathercode[i]] || "☀️";
+				const minTemp = Math.round(daily.temperature_2m_min[i]);
+				const maxTemp = Math.round(daily.temperature_2m_max[i]);
+
+				html += `
+					<div class="forecast-item">
+						<div class="forecast-date-day">
+							<span class="forecast-date">${date}</span>
+							<span class="forecast-day">${weekDays[i]}</span>
+						</div>
+						<span class="forecast-icon">${icon}</span>
+						<span class="forecast-temp">${minTemp} ${maxTemp}</span>
+					</div>
+				`;
+			}
+			document.getElementById("forecastList").innerHTML = html;
+		}
+
+		// 渲染温度折线图
+		function renderChart(data) {
+			const daily = data.daily;
+			const dateLabels = daily.time.slice(0,5);
+			const highTemp = daily.temperature_2m_max.slice(0,5).map(t => Math.round(t));
+			const lowTemp = daily.temperature_2m_min.slice(0,5).map(t => Math.round(t));
+
+			if(tempChart) tempChart.destroy();
+			const ctx = document.getElementById("tempChart").getContext("2d");
+			tempChart = new Chart(ctx, {
+				type: "line",
+				data: {
+					labels: dateLabels,
+					datasets: [
+						{
+							label: "最高温度(℃)",
+							data: highTemp,
+							borderColor: "#ff6b6b",
+							tension: 0.3,
+							fill: false,
+							pointRadius: 5
+						},
+						{
+							label: "最低温度(℃)",
+							data: lowTemp,
+							borderColor: "#4ecdc4",
+							tension: 0.3,
+							fill: false,
+							pointRadius: 5
+						}
+					]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					plugins: {
+						legend: {
+							labels: { color: "white" }
+						}
+					},
+					scales: {
+						x: {
+							ticks: { color: "white" },
+							grid: { color: "rgba(255,255,255,0.1)" }
+						},
+						y: {
+							ticks: { color: "white" },
+							grid: { color: "rgba(255,255,255,0.1)" }
+						}
+					}
+				}
 			});
-		});
+		}
 
-		// 关闭弹窗
-		closeBtn.addEventListener('click', ()=>{
-			modal.style.display = 'none';
-		});
-		modal.addEventListener('click', (e)=>{
-			if(e.target === modal){
-				modal.style.display = 'none';
-			}
+		// 页面加载完成后执行天气接口
+		window.addEventListener('load', function(){
+			typeWrite();
+			getWeatherData();
 		});
 	</script>
 </body>
